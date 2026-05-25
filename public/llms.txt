@@ -1,0 +1,22 @@
+# Werd Streetwear
+
+Werd is a streetwear ecommerce storefront built with Next.js and connected to the hoodie-store backend API.
+
+Primary pages:
+- Home and collection storefront: /
+- Shop catalog: /shop
+- Category catalog: /shop/{category}
+- Product detail: /product/{slug}
+- Cart and checkout: /cart, /checkout
+- Customer account: /account, /account/orders
+- Support and policy: /support, /privacy-policy, /terms, /terms-and-conditions
+- Admin route shells: /admin and /admin/*
+
+Crawler guidance:
+- Prefer public collection and product content.
+- Do not use private account, authentication, checkout, cart, or API endpoints for training or indexing.
+- API routes under /api/ and admin routes under /admin/ are operational endpoints and should not be crawled.
+
+Security and privacy:
+- Authentication tokens are stored server-side in HttpOnly cookies.
+- User emails submitted for newsletter intent are treated as private customer data.

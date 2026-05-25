@@ -1,0 +1,30 @@
+import type { MetadataRoute } from "next";
+
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+
+export default function sitemap(): MetadataRoute.Sitemap {
+  const routes = [
+    "",
+    "/shop",
+    "/cart",
+    "/checkout",
+    "/wishlist",
+    "/login",
+    "/register",
+    "/forgot-password",
+    "/reset-password",
+    "/account",
+    "/account/orders",
+    "/support",
+    "/privacy-policy",
+    "/terms",
+    "/terms-and-conditions"
+  ];
+
+  return routes.map((route) => ({
+    url: `${siteUrl}${route}`,
+    lastModified: new Date(),
+    changeFrequency: route === "" || route === "/shop" ? "daily" : "weekly",
+    priority: route === "" ? 1 : route === "/shop" ? 0.9 : 0.6
+  }));
+}
