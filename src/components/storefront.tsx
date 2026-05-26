@@ -636,7 +636,6 @@ export function Storefront({ products, featured, homepage }: StorefrontProps) {
 
       <section className="subscribe">
         <div className="hero-word">SUBSCRIBE</div>
-        <div className="spark spark-two" />
         <div className="loop-mark loop-two" />
         <h2>{homepage?.newsletterHeading || "Subscribe For Exclusive Fashion Insights"}</h2>
         <p className="subscribe-copy">{homepage?.newsletterSubtext || "Get first access to limited drops, restocks, and private offers."}</p>
