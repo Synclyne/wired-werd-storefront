@@ -136,6 +136,11 @@ export function Storefront({ products, featured, homepage }: StorefrontProps) {
     const saved = homepage?.sectionOrder?.length ? homepage.sectionOrder : ["ticker", "cards", "collection", "banner"];
     return [...saved, ...["buy-fit", "products"].filter((key) => !saved.includes(key))];
   }, [homepage]);
+  const customSectionsMap = useMemo(() => {
+    const map = new Map<string, NonNullable<typeof homepage>["customSections"] extends Array<infer T> | undefined ? T : never>();
+    (homepage?.customSections || []).forEach((s) => map.set(s.id, s));
+    return map;
+  }, [homepage]);
   const buyTheFits = useMemo(() => {
     const configured = (homepage?.buyTheFits || []).filter((fit) => {
       if (fit.visible === false) return false;
@@ -421,154 +426,213 @@ export function Storefront({ products, featured, homepage }: StorefrontProps) {
         </div>
       </section>
 
-      {sectionOrder.includes("ticker") && tickerItems.length > 0 && (
-        <div className="ticker" role="presentation">
-          {tickerItems.map((item) => <span key={item}>{item}</span>)}
-        </div>
-      )}
-
-      {sectionOrder.includes("collection") && <section className="brand-band" id="collections">
-        <div>
-          <h2>{homepage?.collectionTitle || "Fashion Forward"}</h2>
-          <p>{homepage?.collectionSubtext || "Style Eternal"}</p>
-        </div>
-        <div className="brand-logos" aria-label="Featured brands">
-          {brands.map((brand) => (
-            <span key={brand}>{brand}</span>
-          ))}
-        </div>
-      </section>}
-
-      {sectionOrder.includes("cards") && <section className="editorial-grid" aria-label="Featured collection">
-        <article className="large-feature">
-          <img src={featuredCards[0]?.imageUrl || fallbackFeaturedCards[0].imageUrl} alt={featuredCards[0]?.title || "Featured editorial selection"} />
-          <div className="loop-mark" />
-          <a href={getCategoryHref(featuredCards[0]?.category, "#new")}>{featuredCards[0]?.title || "See More"}</a>
-        </article>
-        <div className="mini-feature-row">
-          {featuredCards.slice(1, 3).map((card, index) => (
-            <a className="mini-feature" href={getCategoryHref(card.category, featured[index] ? `/product/${featured[index].slug}` : "/shop")} key={`${card.title || "card"}-${index}`}>
-              <img src={card.imageUrl || featured[index]?.image || fallbackFeaturedCards[index + 1]?.imageUrl} alt={card.title || featured[index]?.name || "Featured story"} />
-              <div>
-                <h3>{card.title || featured[index]?.name || "Featured Story"}</h3>
-                <p>{card.category || featured[index]?.category || "Shop now"}</p>
-              </div>
-              <ArrowRight size={16} />
-            </a>
-          ))}
-        </div>
-      </section>}
-
-      {sectionOrder.includes("buy-fit") && buyTheFits.length > 0 && <section
-        className={`buy-fit-section ${fitProducts.length > 4 ? "orbit-fit" : ""}`}
-        aria-labelledby="buy-fit-title"
-        onPointerDown={(event) => { fitSwipeStart.current = event.clientX; }}
-        onPointerUp={(event) => { finishSwipe(fitSwipeStart.current, event.clientX, moveFit); fitSwipeStart.current = null; }}
-        onPointerCancel={() => { fitSwipeStart.current = null; }}
-      >
-        <div className="buy-fit-copy">
-          <p>{activeFitSlide.kicker || "Styled together"}</p>
-          <h2 id="buy-fit-title">{activeFitSlide.title || "Buy The Fit"}</h2>
-          <span>{activeFitSlide.copy || "Tap any piece around the model to build the full look."}</span>
-          <a className="fit-cta" href={fitShopHref}>{activeFitSlide.ctaLabel || "Shop The Fit"} <ArrowRight size={15} /></a>
-          {buyTheFits.length > 1 && <div className="hero-dots fit-dots" aria-label="Buy the fit slides">
-            {buyTheFits.map((fit, index) => (
-              <button className={index === activeFit ? "active" : ""} type="button" key={fit.id} onClick={() => setActiveFit(index)} aria-label={`Show ${fit.title || `fit ${index + 1}`}`} />
-            ))}
-          </div>}
-        </div>
-        <div className="carousel-arrows fit-arrows" aria-label="Buy the fit carousel controls">
-          <button type="button" onClick={() => moveFit(-1)} disabled={buyTheFits.length <= 1} aria-label="Previous fit slide">
-            <ChevronLeft size={18} />
-          </button>
-          <button type="button" onClick={() => moveFit(1)} disabled={buyTheFits.length <= 1} aria-label="Next fit slide">
-            <ChevronRight size={18} />
-          </button>
-        </div>
-        <div className="buy-fit-stage">
-          <img className="buy-fit-model" src={activeFitSlide.modelImage || homepage?.banner?.imageUrlLeft || "https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?auto=format&fit=crop&w=900&q=85"} alt="Model wearing a complete Werd outfit" />
-          {fitProducts.slice(0, 8).map((item, index) => (
-            <a className={`fit-product fit-product-${index + 1}`} href={`/product/${item.slug}`} key={item.id}>
-              <img src={item.image} alt={item.name} />
-              <span>{item.name}</span>
-              <strong>{formatCurrency(item.price)}</strong>
-            </a>
-          ))}
-        </div>
-      </section>}
-
-      {sectionOrder.includes("products") && <section className="products-section" id="new">
-        <div className="section-heading">
-          <h2>New Arrivals</h2>
-          <div className="category-tabs" role="tablist" aria-label="Product categories">
-            {categories.map((item) => (
-              <button className={item === category ? "active" : ""} type="button" key={item} onClick={() => setCategory(item)}>
-                {item}
-              </button>
-            ))}
-          </div>
-          <div className="product-carousel-controls" aria-label="Product carousel controls">
-            <button type="button" onClick={() => scrollProducts(-1)} aria-label="Scroll products left">
-              <ChevronLeft size={16} />
-            </button>
-            <button type="button" onClick={() => scrollProducts(1)} aria-label="Scroll products right">
-              <ChevronRight size={16} />
-            </button>
-          </div>
-        </div>
-
-        <div
-          className="product-grid product-carousel"
-          ref={productCarouselRef}
-          onPointerEnter={() => { productCarouselPaused.current = true; }}
-          onPointerLeave={() => { productCarouselPaused.current = false; }}
-          onFocus={() => { productCarouselPaused.current = true; }}
-          onBlur={() => { productCarouselPaused.current = false; }}
-        >
-          {visibleProducts.map((product, index) => (
-            <article className={`product-card ${index === 5 ? "buy-card" : ""}`} key={product.id}>
-              <div className="product-image">
-                <img src={product.image} alt={product.name} loading="lazy" />
-                {index === 5 && <span className="buy-now">Buy Now</span>}
-              </div>
-              <span className="product-badge">{product.badge || product.category}</span>
-              <h3>{product.name}</h3>
-              <div className="product-footer">
-                <strong>{formatCurrency(product.price)}</strong>
-                <AddToCartButton product={productWithPreferredSize(product, user)} ariaLabel={`Quick add ${product.name} to cart`}>
-                  <ShoppingBag size={16} />
-                  <span>Quick Add</span>
-                </AddToCartButton>
-              </div>
+      {sectionOrder.map((sectionId) => {
+        if (sectionId === "ticker") {
+          return tickerItems.length > 0 ? (
+            <div className="ticker" role="presentation" key="ticker">
+              {tickerItems.map((item) => <span key={item}>{item}</span>)}
+            </div>
+          ) : null;
+        }
+        if (sectionId === "collection") return (
+          <section className="brand-band" id="collections" key="collection">
+            <div>
+              <h2>{homepage?.collectionTitle || "Fashion Forward"}</h2>
+              <p>{homepage?.collectionSubtext || "Style Eternal"}</p>
+            </div>
+            <div className="brand-logos" aria-label="Featured brands">
+              {brands.map((brand) => <span key={brand}>{brand}</span>)}
+            </div>
+          </section>
+        );
+        if (sectionId === "cards") return (
+          <section className="editorial-grid" aria-label="Featured collection" key="cards">
+            <article className="large-feature">
+              <img src={featuredCards[0]?.imageUrl || fallbackFeaturedCards[0].imageUrl} alt={featuredCards[0]?.title || "Featured editorial selection"} />
+              <div className="loop-mark" />
+              <a href={getCategoryHref(featuredCards[0]?.category, "#new")}>{featuredCards[0]?.title || "See More"}</a>
             </article>
-          ))}
-        </div>
-      </section>}
-
-      {sectionOrder.includes("banner") && <section className="fantasy" id="sale">
-        <div className="fantasy-heading">
-          <h2>{homepage?.banner?.heading || "Unleash Your Fashion Fantasy"}</h2>
-          <a className="dark-pill" href={homepage?.banner?.ctaLink || "/shop"}>
-            {homepage?.banner?.ctaLabel || "Discover Collection"} <ArrowRight size={16} />
-          </a>
-        </div>
-        <div className="campaign-grid">
-          <article>
-            <img src="https://images.unsplash.com/photo-1516257984-b1b4d707412e?auto=format&fit=crop&w=1100&q=85" alt="Streetwear campaign shirt" />
-            <div>
-              <p>Long-Sleeve T-Shirt</p>
-              <button type="button">Shop Now <ArrowRight size={14} /></button>
+            <div className="mini-feature-row">
+              {featuredCards.slice(1, 3).map((card, index) => (
+                <a className="mini-feature" href={getCategoryHref(card.category, featured[index] ? `/product/${featured[index].slug}` : "/shop")} key={`${card.title || "card"}-${index}`}>
+                  <img src={card.imageUrl || featured[index]?.image || fallbackFeaturedCards[index + 1]?.imageUrl} alt={card.title || featured[index]?.name || "Featured story"} />
+                  <div>
+                    <h3>{card.title || featured[index]?.name || "Featured Story"}</h3>
+                    <p>{card.category || featured[index]?.category || "Shop now"}</p>
+                  </div>
+                  <ArrowRight size={16} />
+                </a>
+              ))}
             </div>
-          </article>
-          <article>
-            <img src="https://images.unsplash.com/photo-1539185441755-769473a23570?auto=format&fit=crop&w=1100&q=85" alt="New sneakers on city pavement" />
-            <div>
-              <p>Urban Sneaker 2026</p>
-              <button type="button">Shop Now <ArrowRight size={14} /></button>
+          </section>
+        );
+        if (sectionId === "buy-fit") return buyTheFits.length > 0 ? (
+          <section
+            key="buy-fit"
+            className={`buy-fit-section ${fitProducts.length > 4 ? "orbit-fit" : ""}`}
+            aria-labelledby="buy-fit-title"
+            onPointerDown={(event) => { fitSwipeStart.current = event.clientX; }}
+            onPointerUp={(event) => { finishSwipe(fitSwipeStart.current, event.clientX, moveFit); fitSwipeStart.current = null; }}
+            onPointerCancel={() => { fitSwipeStart.current = null; }}
+          >
+            <div className="buy-fit-copy">
+              <p>{activeFitSlide.kicker || "Styled together"}</p>
+              <h2 id="buy-fit-title">{activeFitSlide.title || "Buy The Fit"}</h2>
+              <span>{activeFitSlide.copy || "Tap any piece around the model to build the full look."}</span>
+              <a className="fit-cta" href={fitShopHref}>{activeFitSlide.ctaLabel || "Shop The Fit"} <ArrowRight size={15} /></a>
+              {buyTheFits.length > 1 && <div className="hero-dots fit-dots" aria-label="Buy the fit slides">
+                {buyTheFits.map((fit, index) => (
+                  <button className={index === activeFit ? "active" : ""} type="button" key={fit.id} onClick={() => setActiveFit(index)} aria-label={`Show ${fit.title || `fit ${index + 1}`}`} />
+                ))}
+              </div>}
             </div>
-          </article>
-        </div>
-      </section>}
+            <div className="carousel-arrows fit-arrows" aria-label="Buy the fit carousel controls">
+              <button type="button" onClick={() => moveFit(-1)} disabled={buyTheFits.length <= 1} aria-label="Previous fit slide"><ChevronLeft size={18} /></button>
+              <button type="button" onClick={() => moveFit(1)} disabled={buyTheFits.length <= 1} aria-label="Next fit slide"><ChevronRight size={18} /></button>
+            </div>
+            <div className="buy-fit-stage">
+              <img className="buy-fit-model" src={activeFitSlide.modelImage || homepage?.banner?.imageUrlLeft || "https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?auto=format&fit=crop&w=900&q=85"} alt="Model wearing a complete Werd outfit" />
+              {fitProducts.slice(0, 8).map((item, index) => (
+                <a className={`fit-product fit-product-${index + 1}`} href={`/product/${item.slug}`} key={item.id}>
+                  <img src={item.image} alt={item.name} />
+                  <span>{item.name}</span>
+                  <strong>{formatCurrency(item.price)}</strong>
+                </a>
+              ))}
+            </div>
+          </section>
+        ) : null;
+        if (sectionId === "products") return (
+          <section className="products-section" id="new" key="products">
+            <div className="section-heading">
+              <h2>New Arrivals</h2>
+              <div className="category-tabs" role="tablist" aria-label="Product categories">
+                {categories.map((item) => (
+                  <button className={item === category ? "active" : ""} type="button" key={item} onClick={() => setCategory(item)}>{item}</button>
+                ))}
+              </div>
+              <div className="product-carousel-controls" aria-label="Product carousel controls">
+                <button type="button" onClick={() => scrollProducts(-1)} aria-label="Scroll products left"><ChevronLeft size={16} /></button>
+                <button type="button" onClick={() => scrollProducts(1)} aria-label="Scroll products right"><ChevronRight size={16} /></button>
+              </div>
+            </div>
+            <div
+              className="product-grid product-carousel"
+              ref={productCarouselRef}
+              onPointerEnter={() => { productCarouselPaused.current = true; }}
+              onPointerLeave={() => { productCarouselPaused.current = false; }}
+              onFocus={() => { productCarouselPaused.current = true; }}
+              onBlur={() => { productCarouselPaused.current = false; }}
+            >
+              {visibleProducts.map((product, index) => (
+                <article className={`product-card ${index === 5 ? "buy-card" : ""}`} key={product.id}>
+                  <div className="product-image">
+                    <img src={product.image} alt={product.name} loading="lazy" />
+                    {index === 5 && <span className="buy-now">Buy Now</span>}
+                  </div>
+                  <span className="product-badge">{product.badge || product.category}</span>
+                  <h3>{product.name}</h3>
+                  {product.description && <p className="product-desc">{product.description}</p>}
+                  <div className="product-footer">
+                    <strong>{formatCurrency(product.price)}</strong>
+                    <AddToCartButton product={productWithPreferredSize(product, user)} ariaLabel={`Quick add ${product.name} to cart`}>
+                      <ShoppingBag size={16} />
+                      <span>Quick Add</span>
+                    </AddToCartButton>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </section>
+        );
+        if (sectionId === "banner") return (
+          <section className="fantasy" id="sale" key="banner">
+            <div className="fantasy-heading">
+              <h2>{homepage?.banner?.heading || "Unleash Your Fashion Fantasy"}</h2>
+              <a className="dark-pill" href={homepage?.banner?.ctaLink || "/shop"}>
+                {homepage?.banner?.ctaLabel || "Discover Collection"} <ArrowRight size={16} />
+              </a>
+            </div>
+            <div className="campaign-grid">
+              <article>
+                <img src="https://images.unsplash.com/photo-1516257984-b1b4d707412e?auto=format&fit=crop&w=1100&q=85" alt="Streetwear campaign shirt" />
+                <div>
+                  <p>Long-Sleeve T-Shirt</p>
+                  <button type="button">Shop Now <ArrowRight size={14} /></button>
+                </div>
+              </article>
+              <article>
+                <img src="https://images.unsplash.com/photo-1539185441755-769473a23570?auto=format&fit=crop&w=1100&q=85" alt="New sneakers on city pavement" />
+                <div>
+                  <p>Urban Sneaker 2026</p>
+                  <button type="button">Shop Now <ArrowRight size={14} /></button>
+                </div>
+              </article>
+            </div>
+          </section>
+        );
+        if (sectionId.startsWith("custom_")) {
+          const cs = customSectionsMap.get(sectionId);
+          if (!cs || cs.visible === false) return null;
+          if (cs.type === "text") return (
+            <div className="custom-text-section" key={sectionId}>
+              {cs.heading && <h2>{cs.heading}</h2>}
+              {cs.body && <p>{cs.body}</p>}
+            </div>
+          );
+          if (cs.type === "image_text") return (
+            <div className="custom-image-text-section" key={sectionId}>
+              {cs.imageUrl && <img src={cs.imageUrl} alt={cs.heading || ""} />}
+              <div className="custom-it-copy">
+                {cs.heading && <h2>{cs.heading}</h2>}
+                {cs.body && <p>{cs.body}</p>}
+                {cs.ctaLabel && cs.ctaLink && <a href={cs.ctaLink}>{cs.ctaLabel}</a>}
+              </div>
+            </div>
+          );
+          if (cs.type === "cta") return (
+            <div className="custom-cta-section" key={sectionId}>
+              {cs.heading && <h2>{cs.heading}</h2>}
+              {cs.body && <p>{cs.body}</p>}
+              {cs.ctaLabel && cs.ctaLink && <a href={cs.ctaLink}>{cs.ctaLabel}</a>}
+            </div>
+          );
+          if (cs.type === "product_carousel") {
+            const carouselProducts = cs.productIds?.length
+              ? products.filter((p) => cs.productIds!.includes(p.id) || cs.productIds!.includes(p.productId || ""))
+              : cs.carouselCategory
+                ? products.filter((p) => p.category.toLowerCase() === cs.carouselCategory!.toLowerCase())
+                : products.slice(0, 8);
+            return (
+              <div className="custom-carousel-section" key={sectionId}>
+                <div className="custom-carousel-head">
+                  <h2>{cs.heading || "Featured Products"}</h2>
+                  {cs.ctaLink && <a href={cs.ctaLink}>{cs.ctaLabel || "See all"}</a>}
+                </div>
+                <div className="custom-carousel-track">
+                  {carouselProducts.map((product) => (
+                    <article className="product-card" key={product.id}>
+                      <div className="product-image">
+                        <img src={product.image} alt={product.name} loading="lazy" />
+                      </div>
+                      <span className="product-badge">{product.badge || product.category}</span>
+                      <h3>{product.name}</h3>
+                      <div className="product-footer">
+                        <strong>{formatCurrency(product.price)}</strong>
+                        <AddToCartButton product={productWithPreferredSize(product, user)} ariaLabel={`Quick add ${product.name} to cart`}>
+                          <ShoppingBag size={16} /><span>Quick Add</span>
+                        </AddToCartButton>
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              </div>
+            );
+          }
+          return null;
+        }
+        return null;
+      })}
 
       <section className="subscribe">
         <div className="hero-word">SUBSCRIBE</div>

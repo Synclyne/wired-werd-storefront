@@ -10,7 +10,9 @@ export function WishlistButton({ productId, label }: { productId?: string; label
   const [message, setMessage] = useState("");
   const [isPending, startTransition] = useTransition();
 
-  function toggle() {
+  function toggle(e: React.MouseEvent) {
+    e.stopPropagation();
+    e.preventDefault();
     if (!productId) return;
     if (!isAuthenticated) {
       setMessage("Login to save this.");

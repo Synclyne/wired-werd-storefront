@@ -161,6 +161,20 @@ type HomepageConfig = {
     productSlugs?: string[];
     visible?: boolean;
   }>;
+  customSections?: Array<{
+    id: string;
+    type?: string;
+    visible?: boolean;
+    heading?: string;
+    subtext?: string;
+    imageUrl?: string;
+    ctaLabel?: string;
+    ctaLink?: string;
+    body?: string;
+    order?: number;
+    carouselCategory?: string;
+    productIds?: string[];
+  }>;
   newsletterHeading?: string;
   newsletterSubtext?: string;
 };
@@ -168,6 +182,26 @@ type HomepageConfig = {
 type HomepageResponse = {
   config?: HomepageConfig | null;
 };
+
+const PRESET_GRADIENTS = [
+  { label: "Dark",          value: "linear-gradient(160deg,#1a1a1a,#3d3d3d)" },
+  { label: "Forest",        value: "linear-gradient(160deg,#2d4a2d,#4a7a4a)" },
+  { label: "Cream",         value: "linear-gradient(160deg,#c5b99a,#e8dcc8)" },
+  { label: "Winter Dark",   value: "linear-gradient(180deg,#111,#333)" },
+  { label: "Winter Warm",   value: "linear-gradient(180deg,#c8b89a,#a89070)" },
+  { label: "Summer Blue",   value: "linear-gradient(180deg,#a8c8e8,#6090c0)" },
+  { label: "Summer Coral",  value: "linear-gradient(180deg,#f0b090,#e07050)" },
+  { label: "Spring Pink",   value: "linear-gradient(160deg,#f0d0d8,#d8a0b0)" },
+  { label: "Autumn Orange", value: "linear-gradient(160deg,#e8a050,#c06820)" },
+  { label: "Navy",          value: "linear-gradient(160deg,#1a2a4a,#2a4a8a)" },
+];
+
+const CUSTOM_SECTION_TYPES = [
+  { value: "product_carousel", label: "Product Carousel", desc: "Horizontal scrolling product row" },
+  { value: "text",             label: "Text Block",        desc: "Centred heading + body text" },
+  { value: "image_text",       label: "Image + Text",      desc: "Image on one side, text the other" },
+  { value: "cta",              label: "Full-Width CTA",    desc: "Large call-to-action strip" },
+];
 
 const orderStatuses = ["pending", "confirmed", "processing", "shipped", "delivered", "cancelled", "refunded"];
 const paymentStatuses = ["pending", "paid", "failed", "refunded"];
@@ -661,6 +695,39 @@ export function AdminHomepageFunctional() {
   const selectedHeroSlide = previewSlides[Math.min(previewIndex, Math.max(0, previewSlides.length - 1))] || firstSlide;
   const selectedCard = (config.featuredCards || [])[Math.min(previewIndex, Math.max(0, (config.featuredCards || []).length - 1))];
   const selectedFit = (config.buyTheFits || [])[Math.min(previewIndex, Math.max(0, (config.buyTheFits || []).length - 1))];
+  function addCustomSection(type: string) {
+    const id = `custom_${Date.now()}`;
+    setConfig((current) => {
+      if (!current) return current;
+      return {
+        ...current,
+        customSections: [...(current.customSections || []), { id, type, visible: true, heading: "NEW SECTION", subtext: "", body: "", imageUrl: "", ctaLabel: "SHOP ALL", ctaLink: "/shop", carouselCategory: "" }],
+        sectionOrder: [...(current.sectionOrder || []), id],
+      };
+    });
+    setActive(id);
+  }
+
+  function updateCustomSection(id: string, field: string, value: string | boolean | string[]) {
+    setConfig((current) => {
+      if (!current) return current;
+      return { ...current, customSections: (current.customSections || []).map((s) => s.id === id ? { ...s, [field]: value } : s) };
+    });
+  }
+
+  function deleteCustomSection(id: string) {
+    if (!window.confirm("Delete this custom section?")) return;
+    setConfig((current) => {
+      if (!current) return current;
+      return {
+        ...current,
+        customSections: (current.customSections || []).filter((s) => s.id !== id),
+        sectionOrder: (current.sectionOrder || []).filter((k) => k !== id),
+      };
+    });
+    setActive("hero");
+  }
+
   const sections = [
     ["hero", "Hero"],
     ["layout", "Layout"],
@@ -669,7 +736,8 @@ export function AdminHomepageFunctional() {
     ["fit", "Buy The Fit"],
     ["collection", "Collection"],
     ["banner", "Banner"],
-    ["newsletter", "Newsletter"]
+    ["newsletter", "Newsletter"],
+    ["custom", "Custom"],
   ];
   const movableSections = [
     ["ticker", "Ticker"],
@@ -706,6 +774,11 @@ export function AdminHomepageFunctional() {
                   <input value={slide.category || ""} onChange={(event) => updateSlide(index, "category", event.target.value)} placeholder="Category slug" />
                   <input value={slide.imageUrl || ""} onChange={(event) => updateSlide(index, "imageUrl", event.target.value)} placeholder="Image URL" />
                   <input value={slide.bgColor || ""} onChange={(event) => updateSlide(index, "bgColor", event.target.value)} placeholder="Background CSS" />
+                  <div className="gradient-presets" aria-label="Preset gradients">
+                    {PRESET_GRADIENTS.map((g) => (
+                      <button type="button" key={g.value} title={g.label} style={{ background: g.value }} className={slide.bgColor === g.value ? "active" : ""} onClick={() => updateSlide(index, "bgColor", g.value)} />
+                    ))}
+                  </div>
                 </div>
               ))}
               <div className="homepage-fieldset add-slide-form">
@@ -717,6 +790,11 @@ export function AdminHomepageFunctional() {
                 <input value={newHeroSlide.category} onChange={(event) => setNewHeroSlide((slide) => ({ ...slide, category: event.target.value }))} placeholder="Category slug" />
                 <input value={newHeroSlide.imageUrl} onChange={(event) => setNewHeroSlide((slide) => ({ ...slide, imageUrl: event.target.value }))} placeholder="Image URL" />
                 <input value={newHeroSlide.bgColor} onChange={(event) => setNewHeroSlide((slide) => ({ ...slide, bgColor: event.target.value }))} placeholder="Background CSS" />
+                <div className="gradient-presets" aria-label="Preset gradients">
+                  {PRESET_GRADIENTS.map((g) => (
+                    <button type="button" key={g.value} title={g.label} style={{ background: g.value }} className={newHeroSlide.bgColor === g.value ? "active" : ""} onClick={() => setNewHeroSlide((slide) => ({ ...slide, bgColor: g.value }))} />
+                  ))}
+                </div>
                 <button type="button" onClick={addHeroSlide}>Add Slide</button>
               </div>
             </>
@@ -819,6 +897,81 @@ export function AdminHomepageFunctional() {
               <input value={config.newsletterSubtext || ""} onChange={(event) => update("newsletterSubtext", event.target.value)} placeholder="Subtext" />
             </>
           )}
+          {active === "custom" && (
+            <>
+              <h2>Custom Sections</h2>
+              <p style={{ margin: "0 0 12px", fontSize: 12, color: "var(--muted)" }}>Add product carousels, text blocks, and CTAs. Drag sections in Layout to reorder them.</p>
+              {(config.customSections || []).length === 0 && <p style={{ fontSize: 12, color: "var(--muted)" }}>No custom sections yet. Add one below.</p>}
+              {(config.customSections || []).map((section) => (
+                <div className="homepage-fieldset" key={section.id}>
+                  <div className="homepage-fieldset-head">
+                    <h3>{CUSTOM_SECTION_TYPES.find((t) => t.value === section.type)?.label || section.type || "Custom"}</h3>
+                    <button type="button" className="danger" onClick={() => deleteCustomSection(section.id)}>Delete</button>
+                  </div>
+                  <input value={section.heading || ""} onChange={(e) => updateCustomSection(section.id, "heading", e.target.value)} placeholder="Heading" />
+                  <textarea value={section.subtext || ""} onChange={(e) => updateCustomSection(section.id, "subtext", e.target.value)} placeholder="Subtext" rows={3} />
+                  {section.type === "text" && (
+                    <textarea value={section.body || ""} onChange={(e) => updateCustomSection(section.id, "body", e.target.value)} placeholder="Body text" rows={5} />
+                  )}
+                  {(section.type === "image_text" || section.type === "cta") && (
+                    <input value={section.imageUrl || ""} onChange={(e) => updateCustomSection(section.id, "imageUrl", e.target.value)} placeholder="Image URL" />
+                  )}
+                  {section.type === "product_carousel" && (
+                    <input value={section.carouselCategory || ""} onChange={(e) => updateCustomSection(section.id, "carouselCategory", e.target.value)} placeholder="Category slug (blank = all)" />
+                  )}
+                  <input value={section.ctaLabel || ""} onChange={(e) => updateCustomSection(section.id, "ctaLabel", e.target.value)} placeholder="CTA label" />
+                  <input value={section.ctaLink || ""} onChange={(e) => updateCustomSection(section.id, "ctaLink", e.target.value)} placeholder="CTA link" />
+                  <label className="admin-check">
+                    <input type="checkbox" checked={section.visible !== false} onChange={(e) => updateCustomSection(section.id, "visible", e.target.checked)} />
+                    Visible
+                  </label>
+                </div>
+              ))}
+              <div className="homepage-fieldset add-slide-form">
+                <h3>Add Section</h3>
+                <div className="custom-section-types">
+                  {CUSTOM_SECTION_TYPES.map((t) => (
+                    <button type="button" key={t.value} onClick={() => addCustomSection(t.value)}>
+                      <strong>{t.label}</strong>
+                      <span>{t.desc}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
+          {/* Custom section editor (when a custom section ID is active) */}
+          {active.startsWith("custom_") && (() => {
+            const section = (config.customSections || []).find((s) => s.id === active);
+            if (!section) return null;
+            return (
+              <>
+                <h2>{CUSTOM_SECTION_TYPES.find((t) => t.value === section.type)?.label || "Custom Section"}</h2>
+                <div className="homepage-fieldset-head">
+                  <span />
+                  <button type="button" className="danger" onClick={() => deleteCustomSection(section.id)}>Delete Section</button>
+                </div>
+                <input value={section.heading || ""} onChange={(e) => updateCustomSection(section.id, "heading", e.target.value)} placeholder="Heading" />
+                <textarea value={section.subtext || ""} onChange={(e) => updateCustomSection(section.id, "subtext", e.target.value)} placeholder="Subtext" rows={3} />
+                {section.type === "text" && (
+                  <textarea value={section.body || ""} onChange={(e) => updateCustomSection(section.id, "body", e.target.value)} placeholder="Body text" rows={5} />
+                )}
+                {(section.type === "image_text" || section.type === "cta") && (
+                  <input value={section.imageUrl || ""} onChange={(e) => updateCustomSection(section.id, "imageUrl", e.target.value)} placeholder="Image URL" />
+                )}
+                {section.type === "product_carousel" && (
+                  <input value={section.carouselCategory || ""} onChange={(e) => updateCustomSection(section.id, "carouselCategory", e.target.value)} placeholder="Category slug (blank = all)" />
+                )}
+                <input value={section.ctaLabel || ""} onChange={(e) => updateCustomSection(section.id, "ctaLabel", e.target.value)} placeholder="CTA label" />
+                <input value={section.ctaLink || ""} onChange={(e) => updateCustomSection(section.id, "ctaLink", e.target.value)} placeholder="CTA link" />
+                <label className="admin-check">
+                  <input type="checkbox" checked={section.visible !== false} onChange={(e) => updateCustomSection(section.id, "visible", e.target.checked)} />
+                  Visible on storefront
+                </label>
+                <button type="button" onClick={() => setActive("custom")}>← Back to All Custom Sections</button>
+              </>
+            );
+          })()}
         </section>
         <aside className="homepage-live-preview">
           <p>Live Preview</p>
