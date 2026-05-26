@@ -2572,6 +2572,10 @@ img {
   scrollbar-width: none;
 }
 .custom-carousel-section .custom-carousel-track::-webkit-scrollbar { display: none; }
+.custom-carousel-section .custom-carousel-track .product-card {
+  flex: 0 0 220px;
+  min-width: 0;
+}
 
 @media (max-width: 700px) {
   .custom-image-text-section { grid-template-columns: 1fr; }
