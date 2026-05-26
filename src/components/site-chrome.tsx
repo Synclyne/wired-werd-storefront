@@ -58,7 +58,6 @@ export function SiteChrome({ children }: { children: React.ReactNode }) {
           <span className="dock-label-short">Drops</span>
         </Link>
         <Link className="floating-brand" href="/">Werd</Link>
-        <Link href="/shop">New</Link>
         <Link href={accountHref}>{accountLabel}</Link>
         <ThemeToggle />
         <button className="floating-cart-action cart-button" type="button" onClick={openCart} aria-label={`${itemCount} items in cart`}><ShoppingBag size={16} />{itemCount > 0 && <span>{itemCount}</span>}</button>

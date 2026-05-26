@@ -378,7 +378,6 @@ export function Storefront({ products, featured, homepage }: StorefrontProps) {
         <a className="floating-brand" href="/" aria-label="Werd home">
           Werd
         </a>
-        <a href="/shop">New</a>
         <a href={accountHref}>{accountLabel}</a>
         <ThemeToggle />
         <button className="floating-cart-action cart-button" type="button" onClick={openCart} aria-label={`${itemCount} items in cart`}>

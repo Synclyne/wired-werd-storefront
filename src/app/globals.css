@@ -326,7 +326,7 @@ img {
   width: min(668px, calc(100% - 24px));
   min-height: 52px;
   display: grid;
-  grid-template-columns: 38px auto auto minmax(66px, auto) auto auto 38px;
+  grid-template-columns: 38px auto auto minmax(66px, auto) auto 32px 38px;
   align-items: center;
   gap: 9px;
   padding: 7px 9px;
@@ -386,7 +386,7 @@ img {
 }
 
 .floating-nav.scrolled {
-  grid-template-columns: 34px repeat(2, minmax(60px, 1fr)) minmax(80px, 1.2fr) repeat(2, minmax(54px, 0.8fr)) 34px;
+  grid-template-columns: 34px repeat(2, minmax(60px, 1fr)) minmax(80px, 1.2fr) minmax(54px, 0.8fr) 28px 34px;
   width: min(480px, calc(100% - 24px));
   min-height: 44px;
   padding: 4px;
@@ -424,8 +424,8 @@ img {
 
 .floating-brand {
   padding: 0 18px;
-  background: #fff !important;
-  color: #111 !important;
+  background: var(--paper) !important;
+  color: var(--ink) !important;
   font-size: 22px !important;
   font-weight: 700 !important;
   letter-spacing: -0.02em !important;
@@ -2180,8 +2180,8 @@ img {
     gap: 12px;
     padding: 12px;
     border-right: 0;
-    border-bottom: 1px solid #d0cec8;
-    background: rgba(247, 247, 242, 0.96);
+    border-bottom: 1px solid var(--line);
+    background: color-mix(in srgb, var(--paper) 96%, transparent);
     overflow: visible;
   }
 
@@ -2240,7 +2240,7 @@ img {
     top: 0;
     z-index: 10;
     padding: 8px 0 10px;
-    background: rgba(247, 247, 242, 0.97);
+    background: color-mix(in srgb, var(--paper) 97%, transparent);
   }
 
   .shop-filter-toggle {
@@ -2822,7 +2822,7 @@ img {
   gap: 0;
   margin: 0;
   padding: 0 0 110px;
-  background: #efeee9;
+  background: color-mix(in srgb, var(--paper) 97%, transparent);
 }
 
 .shop-filter-rail {
@@ -2833,8 +2833,8 @@ img {
   align-content: start;
   gap: 30px;
   padding: 24px 20px 120px;
-  border-right: 1px solid #d0cec8;
-  background: #f4f3ee;
+  border-right: 1px solid var(--line);
+  background: var(--paper);
   overflow-y: auto;
 }
 
@@ -2843,8 +2843,8 @@ img {
   display: flex;
   align-items: center;
   gap: 8px;
-  border-bottom: 1px solid #d0cec8;
-  color: #111;
+  border-bottom: 1px solid var(--line);
+  color: var(--ink);
 }
 
 .shop-search input {
@@ -2863,7 +2863,7 @@ img {
 
 .shop-filter-group h2 {
   margin: 0 0 2px;
-  border-bottom: 1px solid #d0cec8;
+  border-bottom: 1px solid var(--line);
   padding-bottom: 12px;
   font-family: var(--mono);
   font-size: 10px;
@@ -3015,8 +3015,8 @@ img {
   grid-column: 1 / -1;
   margin: 0;
   padding: 28px;
-  background: #f4f3ee;
-  color: #706e68;
+  background: var(--soft);
+  color: var(--muted);
   font-family: var(--mono);
   font-size: 12px;
 }
@@ -5299,7 +5299,7 @@ img {
     padding: 10px;
     border-right: 0;
     border-bottom: 1px solid var(--line);
-    background: rgba(247, 247, 242, 0.96);
+    background: color-mix(in srgb, var(--paper) 96%, transparent);
     overflow: visible;
   }
 
