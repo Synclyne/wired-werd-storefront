@@ -150,14 +150,8 @@ export function ShopView({
 
   const FiltersContent = (
     <div className="shop-filter-body">
-      <FilterGroup title="Category" items={displayCategories} active={category} onSelect={(v) => { setCategory(v); resetPage(); setFiltersOpen(false); }} />
       <FilterGroup title="Tags" items={BADGES} active={tag} onSelect={(v) => { setTag(v); resetPage(); setFiltersOpen(false); }} />
       <FilterGroup title="Gender" items={GENDERS} active={gender} onSelect={(v) => { setGender(v); resetPage(); }} />
-      <div className="shop-filter-group">
-        <h2>Max Price</h2>
-        <input type="range" min={1000} max={priceCap} step={500} value={maxPrice} onChange={(e) => { setMaxPrice(Number(e.target.value)); resetPage(); }} />
-        <strong>{fmt(maxPrice)}</strong>
-      </div>
       <button className="shop-clear-btn" type="button" onClick={() => { setCategory("All"); setTag("All"); setGender("All"); setMaxPrice(priceCap); resetPage(); }}>
         Clear Filters
       </button>
@@ -175,6 +169,25 @@ export function ShopView({
       </aside>
 
       <div className="shop-catalog-panel">
+        {/* Category + price banner — shown instead of a hero at the top of the shop */}
+        <div className="shop-cat-banner">
+          <div className="shop-cat-pills">
+            {displayCategories.map((cat) => (
+              <button
+                key={cat}
+                type="button"
+                className={cat === category ? "active" : ""}
+                onClick={() => { setCategory(cat); resetPage(); }}
+              >{cat}</button>
+            ))}
+          </div>
+          <div className="shop-cat-price">
+            <label htmlFor="shop-price-range">Max price</label>
+            <input id="shop-price-range" type="range" min={1000} max={priceCap} step={500} value={maxPrice} onChange={(e) => { setMaxPrice(Number(e.target.value)); resetPage(); }} />
+            <strong>{fmt(maxPrice)}</strong>
+          </div>
+        </div>
+
         <div className="shop-sort-row">
           {useLiveData && (
             <span className="shop-count">{total > 0 ? `${total} product${total !== 1 ? "s" : ""}` : ""}</span>
