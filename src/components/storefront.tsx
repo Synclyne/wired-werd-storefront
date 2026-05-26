@@ -5,6 +5,7 @@ import { ArrowRight, ChevronLeft, ChevronRight, Heart, Menu, Search, ShoppingBag
 import type { HomepageConfig, Product } from "@/lib/types";
 import { AddToCartButton, useCart } from "@/components/cart-provider";
 import { useAuthStatus } from "@/components/auth-status";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 type StorefrontProps = {
   products: Product[];
@@ -379,6 +380,7 @@ export function Storefront({ products, featured, homepage }: StorefrontProps) {
         </a>
         <a href="/shop">New</a>
         <a href={accountHref}>{accountLabel}</a>
+        <ThemeToggle />
         <button className="floating-cart-action cart-button" type="button" onClick={openCart} aria-label={`${itemCount} items in cart`}>
           <ShoppingBag size={16} />
           {itemCount > 0 && <span>{itemCount}</span>}
@@ -395,7 +397,6 @@ export function Storefront({ products, featured, homepage }: StorefrontProps) {
       >
         <div className="hero-shade" />
         <div className="hero-word">SUPERB</div>
-        <div className="spark spark-one" />
         <div className="loop-mark loop-one" />
         <div className="carousel-arrows hero-arrows" aria-label="Hero carousel controls">
           <button type="button" onClick={() => moveHero(-1)} disabled={resolvedHeroSlides.length <= 1} aria-label="Previous hero slide">

@@ -9,6 +9,16 @@
   --shadow: 0 24px 70px rgba(0, 0, 0, 0.18);
 }
 
+[data-theme="dark"] {
+  --ink: #f0ece2;
+  --paper: #111110;
+  --muted: #888882;
+  --line: #2a2a27;
+  --soft: #1c1c1a;
+  --inverse: #000000;
+  --shadow: 0 24px 70px rgba(0, 0, 0, 0.55);
+}
+
 @media (max-width: 768px) {
   .buy-fit-section {
     padding: 44px 0 92px;

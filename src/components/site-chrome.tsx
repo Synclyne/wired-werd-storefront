@@ -5,6 +5,7 @@ import { Menu, ShoppingBag, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useCart } from "@/components/cart-provider";
 import { useAuthStatus } from "@/components/auth-status";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export function SiteChrome({ children }: { children: React.ReactNode }) {
   const { itemCount, openCart } = useCart();
@@ -59,6 +60,7 @@ export function SiteChrome({ children }: { children: React.ReactNode }) {
         <Link className="floating-brand" href="/">Werd</Link>
         <Link href="/shop">New</Link>
         <Link href={accountHref}>{accountLabel}</Link>
+        <ThemeToggle />
         <button className="floating-cart-action cart-button" type="button" onClick={openCart} aria-label={`${itemCount} items in cart`}><ShoppingBag size={16} />{itemCount > 0 && <span>{itemCount}</span>}</button>
       </nav>
       <aside className={`drawer ${menuOpen ? "open" : ""}`} aria-hidden={!menuOpen}>
